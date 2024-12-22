@@ -1,32 +1,34 @@
 import bcrypt
+import json
 
 def Salt():
     return bcrypt.gensalt()
 
 def UsernameExists(Usertocheck):
-    file = open("Database.txt")
-    for x in file:
-        Username = x.split(" ")[0]
+    file = open("Database.json")
+    jsonf = json.load(file)
+    for user in jsonf:
+        Username = user["Username"]
         if Usertocheck == Username:
-            file.close()
             return 0
     file.close()
     return 1
 def GetHash(Usertocheck):
-    file = open("Database.txt")
-    for x in file:
-        Username = x.split(" ")[0]
+    file = open("Database.json")
+    jsonf = json.load(file)
+    for user in jsonf:
+        Username = user["Username"]
         if Usertocheck == Username:
             file.close()
-            return x.split(" ")[2]
+            return user["Salt"]
     file.close()
     return 1
 def PassMatch(username, password):
-    file = open("Database.txt")
-    for x in file:
-        Username = x.split(" ")[0]
-        Password = x.split(" ")[1]
-        print(f";{username};{Username};\n;{password};{Password};")
+    file = open("Database.json")
+    jsonf = json.load(file)
+    for user in jsonf:
+        Username = user["Username"]
+        Password = user["Password"]
         if Username == username and password == Password:
             return 0
     file.close()
@@ -39,13 +41,20 @@ def RPasswords(Pass1,Pass2):
 
 def register(UserName,PassWord):
     Salty = Salt()
-    DatApp = open("Database.txt",'a')
     line = str(UserName + " ")
     WholePass = UserName + PassWord
     HashPass = bcrypt.hashpw(WholePass.encode(),Salty)
     line += HashPass.decode() + " " + Salty.decode()
-    DatApp.write("\n" + line)
-    DatApp.close()
+    lines = {
+        "Username": UserName,
+        "Password": HashPass.decode(),
+        "Salt": Salty.decode()
+    }
+    with open("Database.json","r") as DatApp:
+        data = json.load(DatApp)
+        data.append(lines)
+    with open("Database.json","w") as Datapp:
+        json.dump(data,Datapp,indent = 4)
     return 10
 def login(UserName,PassWord,Salt):
     Fullpass = UserName + PassWord

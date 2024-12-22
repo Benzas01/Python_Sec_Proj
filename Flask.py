@@ -1,5 +1,10 @@
 from flask import Flask, abort, render_template, request
 import FirstTry
+from password_strength import PasswordStats, policy
+
+paspolicy = policy.PasswordPolicy.from_names(
+    entropybits=20
+)
 
 app = Flask(__name__)
 @app.route("/")
@@ -17,6 +22,11 @@ def RegisterProc():
         return render_template("Error.html")
     if FirstTry.RPasswords(PassWord,RPassWord) == 0:
         return render_template("Error2.html")
+    testedpass = paspolicy.password(PassWord)
+    testedpassfails = testedpass.test()
+    print(len(testedpassfails))
+    if len(testedpassfails) != 0:
+        return render_template("Error3.html")
     FirstTry.register(UserName,PassWord)
     return render_template("Success.html")
 @app.route("/login")
