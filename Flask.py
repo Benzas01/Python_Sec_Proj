@@ -1,5 +1,6 @@
 from flask import Flask, abort, render_template, request
 import FirstTry
+import DB
 from password_strength import PasswordStats, policy
 
 paspolicy = policy.PasswordPolicy.from_names(
@@ -18,7 +19,7 @@ def RegisterProc():
     UserName = request.form.get('UserName')
     PassWord = request.form.get('PassWord')
     RPassWord = request.form.get('RPassWord')
-    if FirstTry.UsernameExists(UserName) == 0:
+    if DB.UserExists(UserName) == 1:
         return render_template("Error.html")
     if FirstTry.RPasswords(PassWord,RPassWord) == 0:
         return render_template("Error2.html")
@@ -36,10 +37,11 @@ def Login():
 def LoginProc():
     UserName = request.form.get('UserName')
     PassWord = request.form.get('PassWord')
-    if FirstTry.UsernameExists(UserName) == 1:
+    if DB.UserExists(UserName) == 0:
         return render_template("Error.html")
-    Salt = FirstTry.GetHash(UserName)
-    if FirstTry.login(UserName,PassWord,Salt) == -11:
+    Salt = DB.GetHash(UserName)
+    print(Salt)
+    if FirstTry.login(UserName,PassWord,Salt) == 1:
         return render_template("Success.html")
     else:
         return render_template("Error2.html")
